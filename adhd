@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
+<title>ADHD 자가검사 · 성인 주의력 선별</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root{
+    --paper:#F5F6F8;
+    --card:#FFFFFF;
+    --ink:#16181D;
+    --ink-2:#3A3F49;
+    --sub:#6A707C;
+    --faint:#9AA0AB;
+    --line:#E7E9ED;
+    --line-2:#EFF1F4;
+    --brand:#2B4C6F;
+    --brand-soft:#EAF0F6;
+    /* 중증도 (절제된 의미색) */
+    --c-normal:#3F8F6B;
+    --c-caution:#C0953A;
+    --c-suspect:#C5743A;
+    --c-moderate:#B05A3E;
+    --c-severe:#A24249;
+    --shadow:0 1px 2px rgba(20,24,33,.04), 0 8px 28px rgba(20,24,33,.06);
+    --shadow-sm:0 1px 2px rgba(20,24,33,.05);
+    --radius:18px;
+    --mono:"SF Mono",ui-monospace,"Roboto Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    letter-spacing:-.01em;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:0 18px;padding-bottom:64px}
+  .screen{display:none;animation:rise .5s cubic-bezier(.2,.7,.2,1)}
+  .screen.active{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    .screen,.fill,*{animation:none!important;transition:none!important}
+  }
+
+  /* ── 상단 바 ── */
+  .topbar{
+    position:sticky;top:0;z-index:30;
+    background:rgba(245,246,248,.82);
+    backdrop-filter:saturate(180%) blur(18px);
+    -webkit-backdrop-filter:saturate(180%) blur(18px);
+    border-bottom:1px solid var(--line-2);
+  }
+  .topbar-in{max-width:560px;margin:0 auto;padding:13px 18px;display:flex;align-items:center;gap:10px}
+  .brandmark{
+    width:26px;height:26px;border-radius:8px;flex:0 0 auto;
+    background:linear-gradient(135deg,var(--brand),#3E6E94);
+    display:grid;place-items:center;
+  }
+  .brandmark svg{width:15px;height:15px}
+  .brandname{font-size:14.5px;font-weight:650;letter-spacing:-.02em}
+  .brandname small{display:block;font-size:10.5px;font-weight:500;color:var(--faint);letter-spacing:.02em;margin-top:-1px}
+  .topbar-spacer{flex:1}
+  .iconbtn{
+    border:1px solid var(--line);background:var(--card);color:var(--sub);
+    width:34px;height:34px;border-radius:10px;display:grid;place-items:center;cursor:pointer;
+    transition:.15s;
+  }
+  .iconbtn:hover{color:var(--ink);border-color:#D7DAE0}
+  .iconbtn svg{width:17px;height:17px}
+
+  /* ── 히어로 ── */
+  .hero{padding:38px 0 10px}
+  .eyebrow{
+    font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--brand);margin-bottom:14px;
+  }
+  h1.title{font-size:31px;line-height:1.18;font-weight:760;letter-spacing:-.035em;margin:0 0 14px}
+  .lede{font-size:15px;color:var(--sub);margin:0 0 26px;max-width:440px}
+  .lede b{color:var(--ink-2);font-weight:600}
+
+  /* 스펙트럼 시그니처 */
+  .spectrum{margin:26px 0 8px}
+  .spectrum-bar{
+    height:12px;border-radius:99px;
+    background:linear-gradient(90deg,var(--c-normal) 0%,var(--c-caution) 33%,var(--c-suspect) 58%,var(--c-moderate) 78%,var(--c-severe) 100%);
+    position:relative;
+  }
+  .spectrum-bar.lg{height:16px}
+  .spectrum-marker{
+    position:absolute;top:50%;width:18px;height:18px;border-radius:50%;
+    background:#fff;border:3px solid var(--ink);transform:translate(-50%,-50%);
+    box-shadow:0 2px 8px rgba(0,0,0,.22);transition:left .9s cubic-bezier(.2,.8,.2,1);
+  }
+  .spectrum-labels{display:flex;justify-content:space-between;margin-top:9px;font-size:11px;color:var(--faint);font-weight:500}
+
+  /* ── 카드 ── */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;box-shadow:var(--shadow-sm);margin:14px 0;
+  }
+  .card.flush{padding:0;overflow:hidden}
+  .card-pad{padding:20px}
+
+  /* ── 버튼 ── */
+  .btn{
+    width:100%;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:650;
+    cursor:pointer;font-family:inherit;letter-spacing:-.01em;transition:.18s;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#2A2E37}
+  .btn-primary:active{transform:scale(.99)}
+  .btn-ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:#CFD3DA;background:#FAFBFC}
+  .btn-soft{background:var(--brand-soft);color:var(--brand)}
+  .btn-soft:hover{background:#E0EAF3}
+  .btn-row{display:flex;gap:10px}
+  .btn-row .btn{flex:1}
+  .btn-sm{padding:12px;font-size:14.5px;border-radius:12px}
+
+  /* 입력 */
+  .field{margin:18px 0 8px}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:8px}
+  .field input{
+    width:100%;border:1px solid var(--line);border-radius:13px;padding:14px 15px;
+    font-size:16px;font-family:inherit;color:var(--ink);background:#FAFBFC;transition:.15s;letter-spacing:-.01em;
+  }
+  .field input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px var(--brand-soft)}
+  .field .hint{font-size:12px;color:var(--faint);margin-top:7px}
+
+  /* 고지 */
+  .notice{
+    display:flex;gap:11px;background:#FBF8F0;border:1px solid #F0E6CF;border-radius:14px;
+    padding:14px 15px;font-size:12.5px;color:#7A6630;line-height:1.55;
+  }
+  .notice svg{width:17px;height:17px;flex:0 0 auto;margin-top:1px}
+  .notice b{font-weight:650;color:#5F4E1F}
+
+  /* ── 검사 진행 ── */
+  .progress{padding:24px 0 6px}
+  .progress-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px}
+  .progress-count{font-size:13px;font-weight:600;color:var(--sub)}
+  .progress-count b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .progress-part{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--brand);text-transform:uppercase}
+  .track{height:5px;background:var(--line-2);border-radius:99px;overflow:hidden}
+  .fill{height:100%;background:var(--ink);border-radius:99px;width:0;transition:width .45s cubic-bezier(.3,.8,.3,1)}
+
+  .q-num{font-size:12px;font-weight:600;color:var(--faint);font-variant-numeric:tabular-nums;letter-spacing:.05em;margin-bottom:9px}
+  .q-text{font-size:20px;font-weight:650;line-height:1.42;letter-spacing:-.025em;margin:0 0 4px;min-height:84px}
+  .q-sub{font-size:12.5px;color:var(--faint);margin-bottom:20px}
+
+  .opts{display:flex;flex-direction:column;gap:9px}
+  .opt{
+    display:flex;align-items:center;gap:13px;width:100%;text-align:left;cursor:pointer;
+    border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:15px 16px;
+    font-family:inherit;font-size:15.5px;font-weight:550;color:var(--ink-2);transition:.14s;
+  }
+  .opt:hover{border-color:#C9CFD8;background:#FBFBFC}
+  .opt .dot{
+    width:21px;height:21px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto;transition:.14s;position:relative;
+  }
+  .opt.sel{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+  .opt.sel .dot{border-color:var(--brand);background:var(--brand)}
+  .opt.sel .dot::after{content:"";position:absolute;inset:4px;background:#fff;border-radius:50%}
+  .opt .scale{margin-left:auto;font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;font-weight:600}
+
+  .nav-row{display:flex;gap:10px;margin-top:22px}
+  .nav-back{flex:0 0 auto;width:54px}
+
+  /* ── 결과 ── */
+  .result-hero{text-align:center;padding:30px 0 6px}
+  .res-badge{
+    display:inline-flex;align-items:center;gap:7px;padding:7px 15px;border-radius:99px;
+    font-size:13px;font-weight:650;margin-bottom:18px;letter-spacing:-.01em;
+  }
+  .res-name{display:none}
+  .res-tier{font-size:33px;font-weight:780;letter-spacing:-.04em;margin:0 0 7px;line-height:1.1}
+  .res-line{font-size:14.5px;color:var(--sub);max-width:420px;margin:0 auto}
+
+  .score-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border-radius:16px;overflow:hidden;margin:6px 0}
+  .score-cell{background:var(--card);padding:16px 12px;text-align:center}
+  .score-cell .v{font-size:25px;font-weight:740;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+  .score-cell .v span{font-size:13px;color:var(--faint);font-weight:600}
+  .score-cell .k{font-size:11.5px;color:var(--sub);margin-top:3px;font-weight:550}
+
+  .sect-label{font-size:12px;font-weight:680;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:0 0 14px}
+
+  .subbar{margin:16px 0}
+  .subbar-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .subbar-name{font-size:14px;font-weight:620}
+  .subbar-name small{font-weight:500;color:var(--faint);font-size:11.5px;margin-left:5px}
+  .subbar-val{font-size:13px;font-weight:680;font-variant-numeric:tabular-nums}
+  .subbar-track{height:9px;background:var(--line-2);border-radius:99px;overflow:hidden}
+  .subbar-fill{height:100%;border-radius:99px;width:0;transition:width .8s cubic-bezier(.3,.8,.3,1)}
+
+  .screener{display:flex;align-items:center;gap:13px;padding:15px 16px;border-radius:14px;border:1px solid var(--line)}
+  .screener .pill{width:42px;height:42px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;font-weight:740;font-size:17px;color:#fff;font-variant-numeric:tabular-nums}
+  .screener .txt{font-size:13px;line-height:1.5}
+  .screener .txt b{font-weight:680;display:block;font-size:14px;margin-bottom:2px}
+
+  .analysis p{font-size:14px;color:var(--ink-2);margin:0 0 13px;line-height:1.62}
+  .analysis p:last-child{margin-bottom:0}
+  .analysis b{font-weight:660;color:var(--ink)}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 16px}
+  .tag{font-size:12px;font-weight:600;padding:6px 11px;border-radius:99px;background:#F1F3F6;color:var(--ink-2)}
+
+  .rec-list{list-style:none;padding:0;margin:0}
+  .rec-list li{display:flex;gap:11px;font-size:13.5px;color:var(--ink-2);padding:9px 0;border-bottom:1px solid var(--line-2);line-height:1.55}
+  .rec-list li:last-child{border-bottom:none}
+  .rec-list .ic{flex:0 0 auto;width:19px;height:19px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-size:11px;font-weight:700;margin-top:1px}
+
+  /* ── 표본/분포 ── */
+  .dist-head{padding:30px 0 6px}
+  .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:16px;overflow:hidden;margin:14px 0}
+  .stat-cell{background:var(--card);padding:17px 16px}
+  .stat-cell .v{font-size:27px;font-weight:760;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+  .stat-cell .v small{font-size:13px;color:var(--faint);font-weight:600}
+  .stat-cell .k{font-size:12px;color:var(--sub);margin-top:2px}
+
+  .distbar{display:flex;align-items:center;gap:12px;margin:13px 0}
+  .distbar-label{flex:0 0 92px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .distbar-label .sw{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+  .distbar-track{flex:1;height:24px;background:var(--line-2);border-radius:8px;overflow:hidden;position:relative}
+  .distbar-fill{height:100%;border-radius:8px;width:0;transition:width .7s cubic-bezier(.3,.8,.3,1);min-width:2px}
+  .distbar-n{flex:0 0 auto;font-size:12.5px;font-weight:680;font-variant-numeric:tabular-nums;width:54px;text-align:right;color:var(--ink-2)}
+
+  .member{
+    display:flex;align-items:center;gap:13px;padding:13px 4px;border-bottom:1px solid var(--line-2);cursor:pointer;transition:.12s;
+  }
+  .member:hover{background:#FAFBFC;border-radius:10px;padding-left:10px;padding-right:10px}
+  .member:last-child{border-bottom:none}
+  .member .av{
+    width:38px;height:38px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;
+    font-size:15px;font-weight:700;color:#fff;
+  }
+  .member .info{flex:1;min-width:0}
+  .member .nm{font-size:14.5px;font-weight:620;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .member .meta{font-size:11.5px;color:var(--faint);margin-top:1px}
+  .member .tierbadge{font-size:11.5px;font-weight:680;padding:5px 10px;border-radius:8px;flex:0 0 auto}
+  .member .sc{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;flex:0 0 auto;width:34px;text-align:right;color:var(--sub)}
+
+  .empty{text-align:center;padding:44px 20px;color:var(--faint)}
+  .empty svg{width:40px;height:40px;margin-bottom:14px;opacity:.5}
+  .empty p{font-size:14px;margin:0}
+
+  .mode-chip{
+    display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;
+    padding:5px 11px;border-radius:99px;border:1px solid var(--line);color:var(--sub);background:var(--card);
+  }
+  .mode-chip .led{width:7px;height:7px;border-radius:50%}
+  .mode-chip.shared .led{background:var(--c-normal)}
+  .mode-chip.local .led{background:var(--faint)}
+
+  /* ── 모달 ── */
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(22,24,29,.46);z-index:60;display:none;
+    align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);
+  }
+  .modal-bg.open{display:flex;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal{
+    background:var(--card);width:100%;max-width:560px;border-radius:24px 24px 0 0;
+    padding:22px 20px calc(24px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;
+    animation:slideup .32s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes slideup{from{transform:translateY(100%)}to{transform:none}}
+  @media(min-width:600px){
+    .modal-bg{align-items:center}
+    .modal{border-radius:22px;max-height:84vh;animation:fade .2s ease}
+  }
+  .modal-grip{width:38px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 16px}
+  .modal h3{font-size:18px;font-weight:700;margin:0 0 4px;letter-spacing:-.02em}
+  .modal .msub{font-size:13px;color:var(--sub);margin:0 0 18px}
+  .modal-steps{counter-reset:s;list-style:none;padding:0;margin:0 0 18px}
+  .modal-steps li{position:relative;padding:0 0 14px 32px;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+  .modal-steps li::before{
+    counter-increment:s;content:counter(s);position:absolute;left:0;top:0;
+    width:21px;height:21px;border-radius:50%;background:var(--brand-soft);color:var(--brand);
+    font-size:11.5px;font-weight:700;display:grid;place-items:center;
+  }
+  .modal-steps code{background:#F1F3F6;padding:1px 6px;border-radius:5px;font-family:var(--mono);font-size:12px;color:var(--brand)}
+
+  .foot{text-align:center;font-size:11px;color:var(--faint);margin-top:34px;line-height:1.7}
+  .foot a{color:var(--sub);text-decoration:none;border-bottom:1px dotted var(--line)}
+  .divider{height:1px;background:var(--line-2);margin:22px 0}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brandmark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 13c2.5-6 5-6 7.5 0s5 6 7.5-2" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </div>
+    <div class="brandname">주의력 자가검사<small>Adult ADHD · ASRS-v1.1</small></div>
+    <div class="topbar-spacer"></div>
+    <button class="iconbtn" id="navDist" title="표본 보기" aria-label="표본 보기">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V10M10 19V5M16 19v-6M22 19v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <button class="iconbtn" id="navSet" title="설정" aria-label="설정">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/><path d="M19.4 13a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V19a2 2 0 11-4 0v-.1A1.6 1.6 0 005 17.7l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 002.3 12H2a2 2 0 110-4h.1A1.6 1.6 0 003.6 5.3l-.1-.1A2 2 0 116.3 2.4l.1.1A1.6 1.6 0 009 1.4V1a2 2 0 114 0v.1a1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 001.1 2.7H22a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z" stroke="currentColor" stroke-width="1.6" transform="scale(.82) translate(2.6 2.6)"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ════════ 시작 화면 ════════ -->
+  <section class="screen active" id="screen-home">
+    <div class="hero">
+      <div class="eyebrow">성인 주의력 선별검사</div>
+      <h1 class="title">혹시 나도 ADHD일까?<br/>18문항으로 확인해 보세요.</h1>
+      <p class="lede">세계보건기구(WHO)가 개발하고 정신과 진료 현장에서 쓰이는 <b>성인 ADHD 자가보고 척도(ASRS-v1.1)</b>를 그대로 사용합니다. 약 2분이면 끝나며, 결과는 <b>주의력결핍·과잉행동/충동</b> 두 축으로 분석해 드립니다.</p>
+
+      <div class="spectrum">
+        <div class="spectrum-bar"></div>
+        <div class="spectrum-labels"><span>정상</span><span>주의</span><span>의심</span><span>중등도</span><span>중증</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field" style="margin-top:4px">
+        <label for="nick">닉네임</label>
+        <input id="nick" type="text" maxlength="14" placeholder="단톡방에서 쓰는 이름" autocomplete="off" />
+        <div class="hint">표본(분포)에 이 이름으로 결과가 기록돼요. 같은 이름으로 다시 하면 최신 결과로 갱신됩니다.</div>
+      </div>
+      <button class="btn btn-primary" id="startBtn" style="margin-top:6px">검사 시작하기</button>
+      <button class="btn btn-soft btn-sm" id="seeDist" style="margin-top:9px">먼저 단톡방 표본부터 보기</button>
+    </div>
+
+    <div class="notice">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.3 3.9 2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><b>이 검사는 진단이 아닙니다.</b> 선별(screening) 도구로, ADHD 가능성을 살펴보는 참고용입니다. 정확한 진단은 정신건강의학과 전문의의 면담과 평가를 통해서만 가능합니다.</div>
+    </div>
+
+    <div class="foot">
+      ASRS-v1.1 · WHO Composite International Diagnostic Interview 기반<br/>
+      <a id="aboutLink">검사·채점 방식 안내</a>
+    </div>
+  </section>
+
+  <!-- ════════ 검사 화면 ════════ -->
+  <section class="screen" id="screen-test">
+    <div class="progress">
+      <div class="progress-head">
+        <div class="progress-count"><b id="qCur">1</b> / 18 문항</div>
+        <div class="progress-part" id="qPart">Part A · 핵심 선별</div>
+      </div>
+      <div class="track"><div class="fill" id="qFill"></div></div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <div class="q-num" id="qNum">문항 01</div>
+      <h2 class="q-text" id="qText"></h2>
+      <p class="q-sub">최근 6개월 기준으로 가장 가까운 것을 선택해 주세요.</p>
+      <div class="opts" id="qOpts"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost nav-back" id="backBtn" aria-label="이전">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="btn btn-primary" id="nextBtn" disabled>다음</button>
+    </div>
+  </section>
+
+  <!-- ════════ 결과 화면 ════════ -->
+  <section class="screen" id="screen-result">
+    <div class="result-hero">
+      <div class="res-badge" id="resBadge"></div>
+      <h2 class="res-tier" id="resTier"></h2>
+      <p class="res-line" id="resLine"></p>
+    </div>
+
+    <div class="spectrum" style="margin:22px 4px 4px">
+      <div class="spectrum-bar lg"><div class="spectrum-marker" id="resMarker" style="left:0%"></div></div>
+      <div class="spectrum-labels"><span>정상</span><span>주의</span><span>의심</span><span>중등도</span><span>중증</span></div>
+    </div>
+
+    <div class="score-grid">
+      <div class="score-cell"><div class="v" id="scTotal">0<span>/72</span></div><div class="k">총점</div></div>
+      <div class="score-cell"><div class="v" id="scIA">0<span>/36</span></div><div class="k">주의력결핍</div></div>
+      <div class="score-cell"><div class="v" id="scHI">0<span>/36</span></div><div class="k">과잉·충동</div></div>
+    </div>
+
+    <div class="card">
+      <p class="sect-label">증상 프로파일</p>
+      <div class="subbar">
+        <div class="subbar-head"><div class="subbar-name">주의력결핍 <small>Inattention</small></div><div class="subbar-val" id="iaVal"></div></div>
+        <div class="subbar-track"><div class="subbar-fill" id="iaFill"></div></div>
+      </div>
+      <div class="subbar">
+        <div class="subbar-head"><div class="subbar-name">과잉행동·충동 <small>Hyperactivity / Impulsivity</small></div><div class="subbar-val" id="hiVal"></div></div>
+        <div class="subbar-track"><div class="subbar-fill" id="hiFill"></div></div>
+      </div>
+      <div class="tags" id="resTags"></div>
+      <div class="divider"></div>
+      <div class="screener" id="resScreener">
+        <div class="pill" id="scrPill"></div>
+        <div class="txt" id="scrTxt"></div>
+      </div>
+    </div>
+
+    <div class="card analysis">
+      <p class="sect-label">결과 해석</p>
+      <div id="resAnalysis"></div>
+    </div>
+
+    <div class="card">
+      <p class="sect-label">권장 사항</p>
+      <ul class="rec-list" id="resRecs"></ul>
+    </div>
+
+    <div class="btn-row" style="margin-top:6px">
+      <button class="btn btn-soft" id="resDist">단톡방 표본 보기</button>
+      <button class="btn btn-ghost" id="resRetake">다시 검사</button>
+    </div>
+    <div class="foot">
+      이 결과는 의학적 진단이 아니며, 일상에 어려움이 있다면 정신건강의학과 전문의 상담을 권합니다.
+    </div>
+  </section>
+
+  <!-- ════════ 표본/분포 화면 ════════ -->
+  <section class="screen" id="screen-dist">
+    <div class="dist-head">
+      <div class="eyebrow">단톡방 표본</div>
+      <h1 class="title" style="font-size:26px">우리 방 ADHD 분포</h1>
+      <p class="lede" style="margin-bottom:14px">참여자들의 결과를 모아 정상부터 중증까지의 분포를 보여줍니다.</p>
+      <span class="mode-chip" id="modeChip"><span class="led"></span><span id="modeTxt"></span></span>
+    </div>
+
+    <div id="distBody"></div>
+
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn btn-ghost" id="distHome">처음으로</button>
+      <button class="btn btn-soft" id="distRefresh">새로고침</button>
+    </div>
+    <div class="foot">
+      <a id="distAbout">표본은 어디에 저장되나요?</a>
+    </div>
+  </section>
+
+</div>
+
+<!-- 모달: 설정 -->
+<div class="modal-bg" id="setModal">
+  <div class="modal">
+    <div class="modal-grip"></div>
+    <h3>표본 공유 설정</h3>
+    <p class="msub">기본은 <b>이 기기에만</b> 저장됩니다. 단톡방 전원이 한 표본을 함께 보려면 무료 Firebase 주소를 한 번만 등록하면 됩니다.</p>
+    <ol class="modal-steps">
+      <li>구글 계정으로 <code>console.firebase.google.com</code> 접속 → 프로젝트 생성</li>
+      <li>좌측 <b>Realtime Database</b> → <b>데이터베이스 만들기</b> → <b>테스트 모드</b>로 시작</li>
+      <li>표시되는 주소(<code>https://○○○-default-rtdb.firebaseio.com</code>)를 아래에 붙여넣기</li>
+      <li>같은 단톡방에 이 HTML(또는 배포 링크)을 공유하고, 각자 같은 주소를 등록하면 표본이 합쳐집니다</li>
+    </ol>
+    <div class="field" style="margin-top:0">
+      <label for="dbUrl">Firebase Realtime Database 주소</label>
+      <input id="dbUrl" type="url" placeholder="https://your-app-default-rtdb.firebaseio.com" autocomplete="off" />
+      <div class="hint">비워 두면 이 기기에만 저장(로컬 모드)됩니다.</div>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-ghost btn-sm" id="setCancel">닫기</button>
+      <button class="btn btn-primary btn-sm" id="setSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 모달: 안내 -->
+<div class="modal-bg" id="infoModal">
+  <div class="modal">
+    <div class="modal-grip"></div>
+    <h3 id="infoTitle">검사·채점 방식</h3>
+    <div id="infoBody" style="font-size:13.5px;color:var(--ink-2);line-height:1.62"></div>
+    <button class="btn btn-ghost btn-sm" id="infoClose" style="margin-top:18px">닫기</button>
+  </div>
+</div>
+
+<!-- 모달: 멤버 상세 -->
+<div class="modal-bg" id="memModal">
+  <div class="modal">
+    <div class="modal-grip"></div>
+    <div id="memBody"></div>
+    <button class="btn btn-ghost btn-sm" id="memClose" style="margin-top:18px">닫기</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ───────────────────────── 문항 (ASRS-v1.1, 18) ───────────────────────── */
+/* group: IA(주의력결핍) / HI(과잉행동·충동) | partA: 핵심 선별 6문항의 채점역치(2 또는 3) */
+const QUESTIONS = [
+  {t:"어떤 일의 어려운 부분을 끝낸 뒤, 마무리 단계의 세부사항을 처리하는 데 어려움을 느끼는 일이 얼마나 자주 있습니까?", g:"IA", partA:2},
+  {t:"체계적으로 정리해야 하는 일을 할 때, 순서대로 정돈하는 데 어려움을 느끼는 일이 얼마나 자주 있습니까?", g:"IA", partA:2},
+  {t:"약속이나 해야 할 일을 기억하는 데 어려움을 느끼는 일이 얼마나 자주 있습니까?", g:"IA", partA:2},
+  {t:"깊이 생각해야 하는 일이 있을 때, 시작을 미루거나 회피하는 일이 얼마나 자주 있습니까?", g:"IA", partA:3},
+  {t:"오래 앉아 있어야 할 때, 손발을 꼼지락거리거나 몸을 뒤척이는 일이 얼마나 자주 있습니까?", g:"HI", partA:3},
+  {t:"마치 모터가 달린 것처럼 과도하게 활동적이고, 무언가를 하지 않으면 안 될 것 같은 느낌이 드는 일이 얼마나 자주 있습니까?", g:"HI", partA:3},
+  {t:"지루하거나 어려운 일을 할 때, 부주의한 실수를 하는 일이 얼마나 자주 있습니까?", g:"IA", partA:null},
+  {t:"지루하거나 반복적인 일을 할 때, 주의를 유지하기 어려운 일이 얼마나 자주 있습니까?", g:"IA", partA:null},
+  {t:"상대가 직접 말을 걸어도, 그 말에 집중하기 어려운 일이 얼마나 자주 있습니까?", g:"IA", partA:null},
+  {t:"집이나 직장에서 물건을 잘못 두거나, 찾는 데 어려움을 느끼는 일이 얼마나 자주 있습니까?", g:"IA", partA:null},
+  {t:"주변의 활동이나 소음 때문에 주의가 흐트러지는 일이 얼마나 자주 있습니까?", g:"IA", partA:null},
+  {t:"회의 등 앉아 있어야 하는 상황에서, 자리를 뜨는 일이 얼마나 자주 있습니까?", g:"HI", partA:null},
+  {t:"안절부절못하거나 들떠 있는 느낌이 드는 일이 얼마나 자주 있습니까?", g:"HI", partA:null},
+  {t:"혼자 여유 있는 시간이 있을 때, 긴장을 풀고 편히 쉬기 어려운 일이 얼마나 자주 있습니까?", g:"HI", partA:null},
+  {t:"사람들과 어울릴 때, 말을 지나치게 많이 한다고 느끼는 일이 얼마나 자주 있습니까?", g:"HI", partA:null},
+  {t:"대화 중에 상대가 말을 끝내기 전에, 그 문장을 대신 끝내버리는 일이 얼마나 자주 있습니까?", g:"HI", partA:null},
+  {t:"차례를 기다려야 하는 상황에서, 순서를 기다리기 어려운 일이 얼마나 자주 있습니까?", g:"HI", partA:null},
+  {t:"다른 사람이 바쁜 상황인데도 끼어드는 일이 얼마나 자주 있습니까?", g:"HI", partA:null},
+];
+const OPTIONS = [
+  {l:"전혀 없음", v:0},
+  {l:"거의 없음", v:1},
+  {l:"가끔", v:2},
+  {l:"자주", v:3},
+  {l:"매우 자주", v:4},
+];
+
+/* 중증도 정의 */
+const TIERS = {
+  normal:   {key:"normal",   name:"정상 범위",       color:"var(--c-normal)",   short:"정상",   pos:6},
+  caution:  {key:"caution",  name:"경계 · 주의 관찰", color:"var(--c-caution)",  short:"주의",   pos:30},
+  suspect:  {key:"suspect",  name:"ADHD 의심",       color:"var(--c-suspect)",  short:"의심",   pos:55},
+  moderate: {key:"moderate", name:"중등도",          color:"var(--c-moderate)", short:"중등도", pos:80},
+  severe:   {key:"severe",   name:"중증",            color:"var(--c-severe)",   short:"중증",   pos:95},
+};
+const TIER_ORDER = ["normal","caution","suspect","moderate","severe"];
+
+/* ───────────────────────── 채점 로직 ───────────────────────── */
+function score(ans){
+  let total=0, ia=0, hi=0, partAMarks=0;
+  for(let i=0;i<QUESTIONS.length;i++){
+    const v = ans[i]??0;
+    total += v;
+    if(QUESTIONS[i].g==="IA") ia+=v; else hi+=v;
+    if(QUESTIONS[i].partA!==null && v>=QUESTIONS[i].partA) partAMarks++;
+  }
+  const partAPositive = partAMarks>=4;
+  let tier;
+  if(!partAPositive){
+    tier = total<=16 ? "normal" : "caution";
+  }else{
+    if(total<36) tier="suspect";
+    else if(total<50) tier="moderate";
+    else tier="severe";
+  }
+  // 우세 양상 (DSM-5 발현 유형 참고)
+  const iaHigh = ia>=17, hiHigh = hi>=17;
+  let pres;
+  if(tier==="normal"){ pres="해당 없음"; }
+  else if(iaHigh && hiHigh) pres="복합형 경향";
+  else if(ia-hi>=6) pres="주의력결핍 우세형 경향";
+  else if(hi-ia>=6) pres="과잉행동·충동 우세형 경향";
+  else pres="복합형 경향";
+  return {total, ia, hi, partAMarks, partAPositive, tier, pres};
+}
+
+/* ───────────────────────── 해석 텍스트 ───────────────────────── */
+function interpret(s){
+  const T = TIERS[s.tier];
+  const lines = {
+    normal:   `현재 응답에서는 ADHD 핵심 증상이 두드러지지 않습니다. 총점 <b>${s.total}점(72점 만점)</b>은 일반적인 범위에 속하며, 핵심 선별문항(Part A)에서도 기준을 넘지 않았습니다.`,
+    caution:  `핵심 선별 기준은 넘지 않았지만, 총점 <b>${s.total}점</b>으로 일부 항목에서 어려움이 관찰됩니다. 임상적 ADHD라기보다는 <b>상황·피로·스트레스</b>의 영향일 수 있으니, 일상에 지장이 반복되는지 관찰해 보시기 바랍니다.`,
+    suspect:  `핵심 선별문항(Part A)에서 <b>${s.partAMarks}개</b>가 기준에 해당해, 성인 ADHD 증상과 <b>일관된 양상</b>을 보입니다. 총점 <b>${s.total}점</b> 수준으로, 전문의 평가를 통해 확인해 볼 가치가 있습니다.`,
+    moderate: `핵심 선별 양성에 더해 총점 <b>${s.total}점</b>으로 증상의 빈도·강도가 <b>중등도</b> 수준입니다. 업무·학업·대인관계 등 여러 영역에서 어려움이 동반될 가능성이 높습니다.`,
+    severe:   `핵심 선별 양성이며 총점 <b>${s.total}점</b>으로 증상이 <b>광범위하고 강하게</b> 나타나고 있습니다. 일상 기능에 상당한 영향을 줄 수 있어, 가능한 한 빠른 전문 평가를 권합니다.`,
+  };
+  const profile =
+    s.pres==="해당 없음" ? `두 증상군 모두 두드러지지 않습니다.`
+    : s.pres==="주의력결핍 우세형 경향" ? `<b>주의력결핍</b>(부주의·집중 유지·정리·기억) 쪽이 더 두드러집니다.`
+    : s.pres==="과잉행동·충동 우세형 경향" ? `<b>과잉행동·충동</b>(안절부절·말 끼어들기·기다리기 어려움) 쪽이 더 두드러집니다.`
+    : `<b>주의력결핍과 과잉행동·충동</b>이 함께 나타나는 복합형 경향입니다.`;
+
+  const p = [];
+  p.push(`<p>${lines[s.tier]}</p>`);
+  p.push(`<p>증상 양상을 보면, ${profile} 단, ADHD 진단은 <b>12세 이전 발병</b>, <b>두 곳 이상의 환경에서의 지장</b>, 다른 원인 배제 등을 함께 따져야 하므로, 이 검사만으로 단정할 수는 없습니다.</p>`);
+  return p.join("");
+}
+
+function recsFor(tier){
+  const base = {
+    normal: [
+      "지금처럼 수면·일정 관리를 꾸준히 유지하세요.",
+      "특정 시기에 집중이 흐트러진다면 그 맥락(피로·스트레스)을 함께 살펴보세요.",
+      "주변에 비슷한 어려움을 겪는 사람이 있다면 이 검사를 권해 보세요.",
+    ],
+    caution: [
+      "어려움이 일시적인지, 6개월 이상 반복되는지 메모로 관찰해 보세요.",
+      "할 일을 잘게 쪼개고 마감·알림을 활용하면 도움이 됩니다.",
+      "수면 부족·과로·우울/불안도 비슷한 증상을 만들 수 있으니 함께 점검하세요.",
+    ],
+    suspect: [
+      "정신건강의학과에 방문해 전문 평가(면담·척도·과거력)를 받아보길 권합니다.",
+      "최근 6개월간의 구체적 일화를 적어 두면 진료에 도움이 됩니다.",
+      "어린 시절(초등 시기) 학교생활 기록·통지표가 있으면 참고가 됩니다.",
+    ],
+    moderate: [
+      "전문의 평가를 가까운 시일 내에 받아보시길 권합니다.",
+      "업무·관계에서 반복되는 어려움의 패턴을 정리해 가면 좋습니다.",
+      "치료가 필요한 경우 약물·인지행동 전략 등 효과적인 방법이 많습니다.",
+    ],
+    severe: [
+      "가능한 한 빠른 시일 내 전문 평가를 받아보시길 권합니다.",
+      "혼자 해결하려 애쓰기보다 전문가와 함께 접근하는 것이 효율적입니다.",
+      "동반될 수 있는 우울·불안 등도 함께 평가받는 것이 좋습니다.",
+    ],
+  };
+  return base[tier];
+}
+
+function tagsFor(s){
+  const t=[];
+  t.push("Part A · " + (s.partAPositive ? "양성" : "음성"));
+  if(s.pres!=="해당 없음") t.push(s.pres);
+  if(s.ia>=24) t.push("부주의 강함");
+  if(s.hi>=24) t.push("과잉·충동 강함");
+  if(s.tier==="normal") t.push("일반 범위");
+  return t;
+}
+
+/* ───────────────────────── 저장소 (Firebase REST + 로컬) ───────────────────────── */
+const LS_DB="adhd_db_url", LS_LOCAL="adhd_local_results", LS_NICK="adhd_nick";
+function dbUrl(){ return (localStorage.getItem(LS_DB)||"").replace(/\/+$/,""); }
+function isShared(){ return !!dbUrl(); }
+function safeKey(name){ return (name||"익명").trim().replace(/[.#$\[\]\/\s]+/g,"_").slice(0,40) || "익명"; }
+
+async function saveResult(rec){
+  if(isShared()){
+    try{
+      await fetch(`${dbUrl()}/adhd_results/${safeKey(rec.nickname)}.json`,{
+        method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(rec)
+      });
+      return;
+    }catch(e){ /* 실패 시 로컬 폴백 */ }
+  }
+  const all = JSON.parse(localStorage.getItem(LS_LOCAL)||"{}");
+  all[safeKey(rec.nickname)] = rec;
+  localStorage.setItem(LS_LOCAL, JSON.stringify(all));
+}
+async function loadResults(){
+  if(isShared()){
+    try{
+      const r = await fetch(`${dbUrl()}/adhd_results.json`);
+      const d = await r.json();
+      return d ? Object.values(d) : [];
+    }catch(e){ return null; } // null = 연결 실패
+  }
+  const all = JSON.parse(localStorage.getItem(LS_LOCAL)||"{}");
+  return Object.values(all);
+}
+async function resetResults(){
+  if(isShared()){
+    try{ await fetch(`${dbUrl()}/adhd_results.json`,{method:"DELETE"}); }catch(e){}
+  }
+  localStorage.removeItem(LS_LOCAL);
+}
+
+/* ───────────────────────── 상태/라우팅 ───────────────────────── */
+const state = { idx:0, ans:new Array(18).fill(null), nick:"" };
+const $ = id => document.getElementById(id);
+function show(name){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  $("screen-"+name).classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* 시작 */
+$("nick").value = localStorage.getItem(LS_NICK)||"";
+$("startBtn").onclick = ()=>{
+  const n = $("nick").value.trim();
+  if(!n){ $("nick").focus(); $("nick").style.borderColor="var(--c-severe)"; setTimeout(()=>$("nick").style.borderColor="",1200); return; }
+  state.nick = n; localStorage.setItem(LS_NICK,n);
+  state.idx=0; state.ans=new Array(18).fill(null);
+  renderQ(); show("test");
+};
+$("seeDist").onclick = ()=>{ renderDist(); show("dist"); };
+$("navDist").onclick = ()=>{ renderDist(); show("dist"); };
+
+/* ── 검사 렌더 ── */
+function renderQ(){
+  const i=state.idx, q=QUESTIONS[i];
+  $("qCur").textContent=i+1;
+  $("qNum").textContent="문항 "+String(i+1).padStart(2,"0");
+  $("qText").textContent=q.t;
+  $("qPart").textContent = i<6 ? "Part A · 핵심 선별" : "Part B · 추가 평가";
+  $("qFill").style.width = ((i)/18*100)+"%";
+  const wrap=$("qOpts"); wrap.innerHTML="";
+  OPTIONS.forEach(o=>{
+    const b=document.createElement("button");
+    b.className="opt"+(state.ans[i]===o.v?" sel":"");
+    b.innerHTML=`<span class="dot"></span><span>${o.l}</span><span class="scale">${o.v}</span>`;
+    b.onclick=()=>{
+      state.ans[i]=o.v;
+      [...wrap.children].forEach(c=>c.classList.remove("sel"));
+      b.classList.add("sel");
+      $("nextBtn").disabled=false;
+      setTimeout(()=>{ if(state.idx<17){ next(); } }, 230);
+    };
+    wrap.appendChild(b);
+  });
+  $("nextBtn").disabled = state.ans[i]===null;
+  $("nextBtn").textContent = i===17 ? "결과 보기" : "다음";
+  $("backBtn").style.visibility = i===0 ? "hidden" : "visible";
+}
+function next(){
+  if(state.ans[state.idx]===null) return;
+  if(state.idx<17){ state.idx++; renderQ(); }
+  else finish();
+}
+$("nextBtn").onclick=next;
+$("backBtn").onclick=()=>{ if(state.idx>0){ state.idx--; renderQ(); } };
+
+/* ── 결과 ── */
+async function finish(){
+  $("qFill").style.width="100%";
+  const s=score(state.ans);
+  const T=TIERS[s.tier];
+  // 배지/타이틀
+  $("resBadge").innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${T.color}"></span>${T.short} · ${state.nick}`;
+  $("resBadge").style.background = tint(T.color);
+  $("resBadge").style.color = T.color;
+  $("resTier").textContent=T.name;
+  $("resTier").style.color=T.color;
+  $("resLine").innerHTML = lineFor(s);
+  // 스펙트럼 마커
+  const pct = Math.min(97, Math.max(3, s.total/72*100));
+  setTimeout(()=>$("resMarker").style.left=pct+"%", 120);
+  // 점수
+  $("scTotal").innerHTML=`${s.total}<span>/72</span>`;
+  $("scIA").innerHTML=`${s.ia}<span>/36</span>`;
+  $("scHI").innerHTML=`${s.hi}<span>/36</span>`;
+  // 서브바
+  $("iaVal").textContent=`${s.ia} / 36`;
+  $("hiVal").textContent=`${s.hi} / 36`;
+  setTimeout(()=>{
+    $("iaFill").style.width=(s.ia/36*100)+"%"; $("iaFill").style.background=barColor(s.ia);
+    $("hiFill").style.width=(s.hi/36*100)+"%"; $("hiFill").style.background=barColor(s.hi);
+  },150);
+  // 태그
+  $("resTags").innerHTML = tagsFor(s).map(t=>`<span class="tag">${t}</span>`).join("");
+  // 선별 요약
+  $("scrPill").textContent=`${s.partAMarks}`;
+  $("scrPill").style.background = s.partAPositive ? "var(--c-suspect)" : "var(--c-normal)";
+  $("scrTxt").innerHTML = `<b>핵심 선별 ${s.partAPositive?"양성":"음성"}</b>6개 핵심문항 중 ${s.partAMarks}개 해당 (4개 이상이면 양성)`;
+  // 해석/권장
+  $("resAnalysis").innerHTML=interpret(s);
+  $("resRecs").innerHTML=recsFor(s.tier).map(r=>`<li><span class="ic">✓</span><span>${r}</span></li>`).join("");
+  show("result");
+  // 저장
+  await saveResult({
+    nickname: state.nick, tier:s.tier, total:s.total, ia:s.ia, hi:s.hi,
+    partAMarks:s.partAMarks, partAPositive:s.partAPositive, pres:s.pres, ts:Date.now()
+  });
+}
+function lineFor(s){
+  const m={
+    normal:"ADHD 핵심 증상이 두드러지지 않는 일반 범위예요.",
+    caution:"일부 어려움이 보이지만 핵심 선별 기준은 넘지 않았어요.",
+    suspect:"성인 ADHD 증상과 일관된 양상이 보여요. 전문 평가를 권해요.",
+    moderate:"증상이 중등도 수준이에요. 전문의 상담을 권합니다.",
+    severe:"증상이 광범위하고 강해요. 빠른 전문 평가를 권합니다.",
+  };
+  return m[s.tier];
+}
+function barColor(v){ return v>=24?"var(--c-suspect)":v>=14?"var(--c-caution)":"var(--c-normal)"; }
+function tint(c){
+  const map={"var(--c-normal)":"#EAF4EF","var(--c-caution)":"#FAF3E3","var(--c-suspect)":"#FAEEE4","var(--c-moderate)":"#F8ECE6","var(--c-severe)":"#F8E9EA"};
+  return map[c]||"#F1F3F6";
+}
+$("resDist").onclick=()=>{ renderDist(); show("dist"); };
+$("resRetake").onclick=()=>{ state.idx=0; state.ans=new Array(18).fill(null); show("home"); };
+
+/* ── 표본/분포 ── */
+async function renderDist(){
+  // 모드칩
+  const chip=$("modeChip"), txt=$("modeTxt");
+  if(isShared()){ chip.className="mode-chip shared"; txt.textContent="공유 모드 · 단톡방 표본"; }
+  else { chip.className="mode-chip local"; txt.textContent="로컬 모드 · 이 기기 저장"; }
+
+  const body=$("distBody");
+  body.innerHTML=`<div class="card" style="text-align:center;color:var(--faint);padding:32px">불러오는 중…</div>`;
+  const data = await loadResults();
+
+  if(data===null){
+    body.innerHTML=`<div class="card empty"><svg viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.3 3.9 2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="1.7"/></svg><p>공유 서버에 연결하지 못했어요.<br/>설정에서 Firebase 주소를 확인해 주세요.</p></div>`;
+    return;
+  }
+  if(!data.length){
+    body.innerHTML=`<div class="card empty"><svg viewBox="0 0 24 24" fill="none"><path d="M9 17v-6M15 17v-3M3 5h18M5 5v14a2 2 0 002 2h10a2 2 0 002-2V5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><p>아직 참여자가 없어요.<br/>첫 검사를 진행해 보세요.</p></div>`;
+    return;
+  }
+
+  // 정렬: 총점 높은 순
+  data.sort((a,b)=>b.total-a.total);
+  const n=data.length;
+  const avg = Math.round(data.reduce((s,d)=>s+d.total,0)/n);
+  const avgIA = Math.round(data.reduce((s,d)=>s+d.ia,0)/n);
+  const avgHI = Math.round(data.reduce((s,d)=>s+d.hi,0)/n);
+  const counts={normal:0,caution:0,suspect:0,moderate:0,severe:0};
+  data.forEach(d=>counts[d.tier]=(counts[d.tier]||0)+1);
+  const flagged = counts.suspect+counts.moderate+counts.severe;
+  const maxC = Math.max(...Object.values(counts),1);
+
+  let html="";
+  // 요약 통계
+  html += `<div class="stat-row">
+    <div class="stat-cell"><div class="v">${n}<small>명</small></div><div class="k">참여자</div></div>
+    <div class="stat-cell"><div class="v">${avg}<small>점</small></div><div class="k">평균 총점 (72점 만점)</div></div>
+    <div class="stat-cell"><div class="v">${flagged}<small>명</small></div><div class="k">의심+ (선별 양성권)</div></div>
+    <div class="stat-cell"><div class="v" style="font-size:21px">${avgIA}<small> / </small>${avgHI}</div><div class="k">평균 부주의 / 과잉·충동</div></div>
+  </div>`;
+
+  // 분포 차트
+  html += `<div class="card"><p class="sect-label">중증도 분포</p>`;
+  TIER_ORDER.forEach(k=>{
+    const T=TIERS[k], c=counts[k]||0, w=c/maxC*100, pc=Math.round(c/n*100);
+    html += `<div class="distbar">
+      <div class="distbar-label"><span class="sw" style="background:${T.color}"></span>${T.name}</div>
+      <div class="distbar-track"><div class="distbar-fill" style="background:${T.color};width:${c?w:0}%"></div></div>
+      <div class="distbar-n">${c}명 · ${pc}%</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // 참여자 목록
+  html += `<div class="card"><p class="sect-label">참여자 (총점 높은 순)</p>`;
+  data.forEach((d,i)=>{
+    const T=TIERS[d.tier];
+    html += `<div class="member" data-i="${i}">
+      <div class="av" style="background:${T.color}">${escapeHtml((d.nickname||"?").slice(0,1))}</div>
+      <div class="info">
+        <div class="nm">${escapeHtml(d.nickname||"익명")}</div>
+        <div class="meta">${dateStr(d.ts)} · 부주의 ${d.ia} / 과잉·충동 ${d.hi}</div>
+      </div>
+      <span class="tierbadge" style="background:${tint(T.color)};color:${T.color}">${T.short}</span>
+      <span class="sc">${d.total}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // 관리
+  html += `<button class="btn btn-ghost btn-sm" id="distReset" style="margin-top:4px;color:var(--c-severe)">표본 전체 초기화</button>`;
+
+  body.innerHTML=html;
+
+  // 멤버 클릭 → 상세
+  body.querySelectorAll(".member").forEach(el=>{
+    el.onclick=()=>openMember(data[+el.dataset.i]);
+  });
+  $("distReset").onclick=async()=>{
+    if(confirm("표본 전체를 삭제할까요? 되돌릴 수 없습니다.")){
+      await resetResults(); renderDist();
+    }
+  };
+}
+function openMember(d){
+  const T=TIERS[d.tier];
+  $("memBody").innerHTML=`
+    <div class="modal-grip"></div>
+    <div style="display:flex;align-items:center;gap:13px;margin-bottom:18px">
+      <div class="av" style="width:46px;height:46px;border-radius:13px;font-size:18px;background:${T.color}">${escapeHtml((d.nickname||"?").slice(0,1))}</div>
+      <div><div style="font-size:18px;font-weight:700">${escapeHtml(d.nickname||"익명")}</div>
+      <div style="font-size:12.5px;color:var(--faint)">${dateStr(d.ts)} 검사</div></div>
+      <span class="tierbadge" style="margin-left:auto;background:${tint(T.color)};color:${T.color};font-size:13px;padding:7px 13px">${T.name}</span>
+    </div>
+    <div class="spectrum" style="margin:6px 0 18px"><div class="spectrum-bar lg"><div class="spectrum-marker" style="left:${Math.min(97,Math.max(3,d.total/72*100))}%"></div></div>
+      <div class="spectrum-labels"><span>정상</span><span>주의</span><span>의심</span><span>중등도</span><span>중증</span></div></div>
+    <div class="score-grid">
+      <div class="score-cell"><div class="v">${d.total}<span>/72</span></div><div class="k">총점</div></div>
+      <div class="score-cell"><div class="v">${d.ia}<span>/36</span></div><div class="k">주의력결핍</div></div>
+      <div class="score-cell"><div class="v">${d.hi}<span>/36</span></div><div class="k">과잉·충동</div></div>
+    </div>
+    <div style="margin-top:14px;font-size:13px;color:var(--ink-2);line-height:1.6">
+      핵심 선별(Part A) <b>${d.partAPositive?"양성":"음성"}</b> · 6문항 중 ${d.partAMarks}개 해당.
+      증상 양상은 <b>${d.pres||"-"}</b>입니다.
+    </div>`;
+  $("memModal").classList.add("open");
+}
+
+$("distHome").onclick=()=>show("home");
+$("distRefresh").onclick=renderDist;
+
+/* ── 설정 모달 ── */
+$("navSet").onclick=()=>{ $("dbUrl").value=dbUrl(); $("setModal").classList.add("open"); };
+$("setCancel").onclick=()=>$("setModal").classList.remove("open");
+$("setSave").onclick=()=>{
+  const u=$("dbUrl").value.trim();
+  if(u) localStorage.setItem(LS_DB,u); else localStorage.removeItem(LS_DB);
+  $("setModal").classList.remove("open");
+};
+
+/* ── 안내 모달 ── */
+const ABOUT_HTML = `
+  <p style="margin-top:0"><b>무엇을 재나요?</b><br/>세계보건기구(WHO)의 성인 ADHD 자가보고 척도 ASRS-v1.1 18문항입니다. 정신과 선별 현장에서 널리 쓰입니다.</p>
+  <p><b>어떻게 채점하나요?</b><br/>각 문항을 0~4점으로 매겨 총점(0~72)을 냅니다. 주의력결핍 9문항·과잉행동/충동 9문항으로 나눠 두 축을 분석합니다.</p>
+  <p><b>핵심 선별(Part A)이란?</b><br/>앞 6개 문항은 ADHD를 가장 잘 가려내는 핵심 문항입니다. 정해진 빈도 이상으로 응답한 항목이 4개 이상이면 '양성'으로, 추가 평가가 권장됩니다.</p>
+  <p><b>중증도 구간</b><br/>핵심 선별 결과와 총점을 함께 보아 정상 → 주의 → 의심 → 중등도 → 중증으로 나눕니다. 총점 구간은 직관적 이해를 돕는 참고선이며, 임상적으로 검증된 기준은 Part A입니다.</p>
+  <p style="color:var(--c-severe)"><b>주의</b> · 이 검사는 진단이 아닙니다. ADHD 진단은 12세 이전 발병, 여러 환경에서의 지장, 다른 원인 배제 등을 종합해 전문의가 내립니다.</p>`;
+const STORE_HTML = `
+  <p style="margin-top:0">기본값은 <b>이 기기에만</b> 저장되는 로컬 모드입니다. 그래서 다른 사람의 결과는 보이지 않습니다.</p>
+  <p>단톡방 전원이 <b>하나의 표본</b>을 함께 보려면, 우측 상단 톱니바퀴(설정)에서 무료 Firebase 주소를 한 번만 등록하세요. 같은 주소를 등록한 사람들의 결과가 자동으로 합쳐집니다.</p>
+  <p>개인정보는 닉네임과 점수만 저장되며, 실명·연락처 등은 수집하지 않습니다.</p>`;
+function openInfo(title,html){ $("infoTitle").textContent=title; $("infoBody").innerHTML=html; $("infoModal").classList.add("open"); }
+$("aboutLink").onclick=()=>openInfo("검사·채점 방식",ABOUT_HTML);
+$("distAbout").onclick=()=>openInfo("표본 저장 방식",STORE_HTML);
+$("infoClose").onclick=()=>$("infoModal").classList.remove("open");
+$("memClose").onclick=()=>$("memModal").classList.remove("open");
+document.querySelectorAll(".modal-bg").forEach(m=>m.addEventListener("click",e=>{ if(e.target===m) m.classList.remove("open"); }));
+
+/* ── 유틸 ── */
+function escapeHtml(s){ return (s+"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function dateStr(ts){
+  if(!ts) return "-";
+  const d=new Date(ts);
+  return `${d.getMonth()+1}월 ${d.getDate()}일`;
+}
+</script>
+</body>
+</html>
